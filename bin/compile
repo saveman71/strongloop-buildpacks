@@ -61,12 +61,12 @@ if test -d $build_dir/node_modules; then
   status "Rebuilding any native dependencies"
   npm rebuild 2>&1 | indent
 elif test -d $cache_dir/node_modules; then
-  status "Restoring node_modules from cache"
+  status "Restoring node_modules from cache - $cache_dir -> $build_dir"
   cp -r $cache_dir/node_modules $build_dir/
 fi
 
 status "Installing StrongLoop dependencies"
-npm install -g strongloop
+npm install strongloop
 # Make npm output to STDOUT instead of its default STDERR
 status "Installing dependencies"
 npm install --production 2>&1 | indent
