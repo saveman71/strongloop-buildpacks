@@ -61,18 +61,53 @@ if test -d $build_dir/node_modules; then
   status "Rebuilding any native dependencies"
   npm rebuild 2>&1 | indent
 elif test -d $cache_dir/node_modules; then
-  status "Restoring node_modules from cache - $cache_dir -> $build_dir"
+  status "Restoring node_modules from cache"
   cp -r $cache_dir/node_modules $build_dir/
 fi
 
+# Install strongloop module
 status "Installing StrongLoop dependencies"
-npm install strongloop
+before_node_version=""
+if [ -f node_modules/.node-version ]; then
+	before_node_version=`cat node_modules/.node-version`
+fi
+if [ -d node_modules/strongloop -a "$node_version" = "$before_node_version" -a "$DISABLE_CACHE_SL_MODULE" != "false" ]; then
+	status "-- Skipped"
+	status "-- To disable the cache, set DISABLE_CACHE_SL_MODULE=false in Environment Variable."
+else
+	npm install strongloop --production
+fi
+
+# Make a backup of strongloop module for protect from npm prune
+if [ -d sl_tmp ]; then
+	rm -r -f sl_tmp/
+fi
+mkdir -p sl_tmp/node_modules
+if [ -f node_modules/.bin/slc ]; then
+	status "Backing up the slc command to protect from npm prune"
+	mkdir -p sl_tmp/node_modules/.bin
+	mv node_modules/.bin/slc sl_tmp/node_modules/.bin/
+fi
+if [ -d node_modules/strongloop ]; then
+	status "Backing up the strongloop directory to protect from npm prune"
+	mv node_modules/strongloop sl_tmp/node_modules/
+fi
+
 # Make npm output to STDOUT instead of its default STDERR
 status "Installing dependencies"
 npm install --production 2>&1 | indent
 
 status "Pruning unused dependencies"
 npm prune 2>&1 | indent
+
+# Restore strongloop module to node_modules directory
+if [ -d sl_tmp/node_modules ]; then
+	status "Restoring directory that protected from npm prune"
+	cp -r -f sl_tmp/node_modules .
+	rm -r -f sl_tmp/
+	# Save the node version
+	echo "$node_version" > node_modules/.node-version
+fi
 
 status "Caching node_modules directory for future builds"
 rm -rf $cache_dir
