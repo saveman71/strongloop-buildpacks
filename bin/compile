@@ -71,7 +71,7 @@ before_node_version=""
 if [ -f node_modules/.node-version ]; then
 	before_node_version=`cat node_modules/.node-version`
 fi
-if [ -d node_modules/strongloop -a "$node_version" = "$before_node_version" -a "$DISABLE_CACHE_SL_MODULE" != "true" ]; then
+if [ -d node_modules/strongloop -a "$node_version" = "$before_node_version" -a "$DISABLE_CACHE_SL_MODULE" != "false" ]; then
 	status "-- Skipped"
 	status "-- To disable the cache, set DISABLE_CACHE_SL_MODULE=true in Environment Variable."
 else
