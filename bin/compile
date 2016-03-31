@@ -75,7 +75,7 @@ if [ -d node_modules/strongloop -a "$node_version" = "$before_node_version" -a "
 	status "-- Skipped"
 	status "-- To disable the cache, set DISABLE_CACHE_SL_MODULE=true in Environment Variable."
 else
-	npm install strongloop --production
+	npm install -g strongloop
 fi
 
 # Make a backup of strongloop module for protect from npm prune
